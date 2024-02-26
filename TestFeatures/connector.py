@@ -45,7 +45,7 @@ def main():
         print("Ответ на стартовое сообщение:", response.decode(encoding='cp1251'))
 
         # Пример SQL-запроса
-        message = "SELECT num FROM house;"
+        message = "SELECT * FROM house;"
         query(sock, message)
 
         # Получение ответа
