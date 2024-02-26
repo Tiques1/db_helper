@@ -76,7 +76,7 @@ def ssl_request():
 def startup_message(database, user):
     message = NULL_BYTE.join(
         [b'database', database.encode(), b'user', user.encode(), b'\x00'])
-    return struct.pack('!I', len(message) + 4) + struct.pack('!H', 3) + b'\x00\x00' + message
+    return struct.pack('!I', len(message) + 8) + struct.pack('!H', 3) + b'\x00\x00' + message
 
 
 def sync():
