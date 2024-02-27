@@ -1,5 +1,4 @@
-import Table
-import asyncio
+
 
 HANDLER = {'C': lambda cmd: command_complete(cmd),
            'G': lambda cmd: copy_in_response(cmd),
@@ -32,11 +31,11 @@ def copy_out_response(cmd):
     pass
 
 
-async def row_description(cmd):
+def row_description(cmd):
     pass
 
 
-async def data_row(cmd):
+def data_row(cmd):
     pass
 
 

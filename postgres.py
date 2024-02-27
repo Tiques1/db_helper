@@ -6,6 +6,9 @@ import query
 
 
 class Postgres:
+    def __setattr__(self, key, value):
+        pass
+
     def __init__(self, dbname: str, user: str, password: str, addr: str = 'localhost', port: int = 5432):
         self.__sock = None
         self.dbname = dbname
@@ -13,7 +16,7 @@ class Postgres:
         self.password = password
         self.addr = addr
         self.port = port
-        self._params = {}
+        self.__params = {}
         self.__back_keys = {}
 
     def connect(self):
@@ -25,9 +28,9 @@ class Postgres:
             self.__sock.send(msg)
 
             rcv = reciever(self.__sock)
-            self._params, self.__back_keys = auth.handler(rcv, self.__sock)
-        except socket.error as e:
-            print(e)
+            self.__params, self.__back_keys = auth.handler(rcv, self.__sock)
+        except socket.error:
+            pass
 
     def query(self, text):
         self.__sock.send(clms.query(text))
@@ -38,18 +41,14 @@ class Postgres:
         self.__sock.send(clms.terminate())
         try:
             self.__sock.close()
-            print('Disconnected')
-        except socket.error as e:
-            print(e)
-
-    def __explore(self):
-        pass
-
-    def __del__(self):
-        try:
-            self.__sock.close()
-        except OSError:
+        except socket.error:
             pass
+
+    @property
+    def params(self):
+        param = {key.decode('utf-8', errors='ignore'):
+                 value.decode('utf-8', errors='ignore') for key, value in self.__params.items()}
+        return param
 
 
 def reciever(sock: socket) -> [bytes]:

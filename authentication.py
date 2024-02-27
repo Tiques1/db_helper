@@ -20,7 +20,7 @@ HANDLER = {
 
 """
 Every auth function finally call authentication_ok,
-which return connection params and backend keys.
+which return connection __params and backend keys.
 Params and backend keys returned by authentication_ok 
 return back to handler.
 Handler return them to Postgres class
