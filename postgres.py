@@ -35,8 +35,10 @@ class Postgres:
         query.handler(rcv)
 
     def disconnect(self):
+        self.__sock.send(clms.terminate())
         try:
             self.__sock.close()
+            print('Disconnected')
         except socket.error as e:
             print(e)
 
@@ -44,7 +46,10 @@ class Postgres:
         pass
 
     def __del__(self):
-        self.disconnect()
+        try:
+            self.__sock.close()
+        except OSError:
+            pass
 
 
 def reciever(sock: socket) -> [bytes]:
@@ -63,7 +68,7 @@ def reciever(sock: socket) -> [bytes]:
 def main():
     db = Postgres('dmx', 'postgres', '1111')
     db.connect()
-    db.query('')
+    # db.query('')
     # print(res)
     # [print(result.decode('utf-8', errors='ignore')) for result in res]
     db.disconnect()

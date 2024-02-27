@@ -9,6 +9,10 @@ def bind():
     pass
 
 
+def cancel_request(proc_id, sercret_key):
+    return struct.pack('!I', 16) + struct.pack('!I', 80877102) + proc_id + sercret_key
+
+
 def close():
     pass
 
@@ -84,4 +88,4 @@ def sync():
 
 
 def terminate():
-    pass
+    return b'X' + struct.pack('!I', 4)
