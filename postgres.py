@@ -1,6 +1,8 @@
 import socket
-import usermessages
+import struct
+import client_messages as clms
 import authentication as auth
+import query
 
 
 class Postgres:
@@ -11,29 +13,26 @@ class Postgres:
         self.password = password
         self.addr = addr
         self.port = port
+        self._params = {}
+        self.__back_keys = {}
 
     def connect(self):
         try:
             self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.__sock.connect((self.addr, self.port))
 
-            msg = usermessages.startup_message(user=self.user, database=self.dbname)
+            msg = clms.startup_message(user=self.user, database=self.dbname)
             self.__sock.send(msg)
-            rcv = self.__sock.recv(4096)
 
-            resp = rcv.decode(encoding='utf-8', errors='ignore')[0]
-            msg_len = int.from_bytes(rcv[1:5], byteorder='big', signed=False)
-            specifier = int.from_bytes(rcv[5:9], byteorder='big', signed=False)
-
-            authenticator = auth.HANDLER.get((resp, msg_len, specifier))
-            authenticator(rcv, self.__sock)
-
+            rcv = reciever(self.__sock)
+            self._params, self.__back_keys = auth.handler(rcv, self.__sock)
         except socket.error as e:
             print(e)
 
     def query(self, text):
-        self.__sock.send(usermessages.query(text))
-        return self.__sock.recv(4096)
+        self.__sock.send(clms.query(text))
+        rcv = reciever(self.__sock)
+        query.handler(rcv)
 
     def disconnect(self):
         try:
@@ -41,16 +40,32 @@ class Postgres:
         except socket.error as e:
             print(e)
 
+    def __explore(self):
+        pass
+
     def __del__(self):
         self.disconnect()
+
+
+def reciever(sock: socket) -> [bytes]:
+    requests = []
+    sock.settimeout(1)
+    try:
+        while True:
+            b = sock.recv(5)
+            length = struct.unpack('!I', b[1:])[0]
+            requests.append(b + sock.recv(length-4))
+    except socket.timeout:
+        pass
+    return requests
 
 
 def main():
     db = Postgres('dmx', 'postgres', '1111')
     db.connect()
-    result = db.query('SELECT * FROM cities WHERE population < 10000 order by population')
-    print(result)
-    print(result.decode('utf-8', errors='ignore'))
+    db.query('')
+    # print(res)
+    # [print(result.decode('utf-8', errors='ignore')) for result in res]
     db.disconnect()
 
 
