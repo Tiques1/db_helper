@@ -1,9 +1,7 @@
 import socket
 import struct
-import client_messages as clms
-import authentication as auth
-import query
-from Table import Table
+from Postgres import authentication as auth, client_messages as clms
+from Postgres import query
 import database
 
 
@@ -30,14 +28,14 @@ class Postgres:
             msg = clms.startup_message(user=self.user, database=self.dbname)
             self.__sock.send(msg)
 
-            rcv = reciever(self.__sock)
+            rcv = self.__reciever(self)
             self.__params, self.__back_keys = auth.handler(rcv, self.__sock)
         except socket.error:
             pass
 
     def query(self, text):
         self.__sock.send(clms.query(text))
-        rcv = reciever(self.__sock)
+        rcv = self.__reciever(self)
         query.handler(rcv)
 
     def disconnect(self):
@@ -50,25 +48,21 @@ class Postgres:
     def database(self):
         return self.__database
 
-    # create table
-    def create(self, name, header):
-        self.__dict__[name] = Table(name, header, self)
-
     @property
     def params(self):
         param = {key.decode('utf-8', errors='ignore'):
                  value.decode('utf-8', errors='ignore') for key, value in self.__params.items()}
         return param
 
-
-def reciever(sock: socket) -> [bytes]:
-    requests = []
-    sock.settimeout(1)
-    try:
-        while True:
-            b = sock.recv(5)
-            length = struct.unpack('!I', b[1:])[0]
-            requests.append(b + sock.recv(length-4))
-    except socket.timeout:
-        pass
-    return requests
+    @staticmethod
+    def __reciever(self) -> [bytes]:
+        requests = []
+        self.__sock.settimeout(1)
+        try:
+            while True:
+                b = self.__sock.recv(5)
+                length = struct.unpack('!I', b[1:])[0]
+                requests.append(b + self.__sock.recv(length-4))
+        except socket.timeout:
+            pass
+        return requests

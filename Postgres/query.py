@@ -1,5 +1,3 @@
-
-
 HANDLER = {'C': lambda cmd: command_complete(cmd),
            'G': lambda cmd: copy_in_response(cmd),
            'H': lambda cmd: copy_out_response(cmd),

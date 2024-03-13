@@ -1,6 +1,5 @@
 import struct
-import client_messages as clms
-import query
+from . import query
 
 
 """
