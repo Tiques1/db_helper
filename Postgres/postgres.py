@@ -3,11 +3,13 @@ import struct
 import client_messages as clms
 import authentication as auth
 import query
+from Table import Table
+import database
 
 
 class Postgres:
-    def __setattr__(self, key, value):
-        pass
+    def __getitem__(self, item):
+        return getattr(self, item)
 
     def __init__(self, dbname: str, user: str, password: str, addr: str = 'localhost', port: int = 5432):
         self.__sock = None
@@ -18,6 +20,7 @@ class Postgres:
         self.port = port
         self.__params = {}
         self.__back_keys = {}
+        self.__database = database.Database(self)
 
     def connect(self):
         try:
@@ -44,6 +47,13 @@ class Postgres:
         except socket.error:
             pass
 
+    def database(self):
+        return self.__database
+
+    # create table
+    def create(self, name, header):
+        self.__dict__[name] = Table(name, header, self)
+
     @property
     def params(self):
         param = {key.decode('utf-8', errors='ignore'):
@@ -62,16 +72,3 @@ def reciever(sock: socket) -> [bytes]:
     except socket.timeout:
         pass
     return requests
-
-
-def main():
-    db = Postgres('dmx', 'postgres', '1111')
-    db.connect()
-    # db.query('')
-    # print(res)
-    # [print(result.decode('utf-8', errors='ignore')) for result in res]
-    db.disconnect()
-
-
-if __name__ == "__main__":
-    main()

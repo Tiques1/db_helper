@@ -2,6 +2,7 @@ import struct
 import client_messages as clms
 import query
 
+
 """
 Types of authentication
 https://www.postgresql.org/docs/current/protocol-message-formats.html
@@ -20,13 +21,13 @@ HANDLER = {
 
 """
 Every auth function finally call authentication_ok,
-which return connection __params and backend keys.
+which return connection params and backend keys.
 Params and backend keys returned by authentication_ok 
 return back to handler.
 Handler return them to Postgres class
 
 Call tree
-Postgres.connection -> authentication.handler -> func -> authentication_ok
+Postgres.connect -> authentication.handler -> func -> authentication_ok
 """
 
 
@@ -83,3 +84,4 @@ def authentication_sasl(rcv, sock):
 
 def negotiate_protocol_version(rcv, sock):
     return authentication_ok(rcv)
+
