@@ -36,7 +36,7 @@ class Postgres:
     def query(self, text):
         self.__sock.send(clms.query(text))
         rcv = self.__reciever(self)
-        query.handler(rcv)
+        return query.handler(rcv, self)
 
     def disconnect(self):
         self.__sock.send(clms.terminate())

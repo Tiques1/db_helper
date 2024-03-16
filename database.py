@@ -1,36 +1,41 @@
+import table
 from table import Table
 
 
 class Database:
     def __init__(self, connection):
-        self.__conn = connection
+        self.conn = connection
+        self.update()
 
     def update(self):
         pass
 
-    def create(self, name):
-        self.__conn.query(f'CREATE TABLE {name}()')
-        self.__dict__[name] = Table(self.__conn, name)
+    # def create(self, name):
+    #     self.conn.query(f'CREATE TABLE {name} ( );')
+    #     self.__dict__[name] = Table(self.conn, name, True)
 
     def tables(self):
         tables = []
-        for i in self.__dict__:
-            if isinstance(i, Table):
+        for i in self.__dict__.values():
+            if isinstance(i, table.Table):
                 tables.append(i)
         return tables
 
 
-class PostgreSQL(Database):
+class PostgreSQLDB(Database):
     def update(self):
-        table = self.__conn.query('SELECT * FROM pg_catalog.pg_tables WHERE schemaname = \'public\';')
-        self.__dict__[table.table_name] = Table(self.__conn)
+        t = self.conn.query('SELECT * FROM pg_catalog.pg_tables WHERE schemaname = \'public\';')
+        self.__dict__[t.table_name] = Table(self.conn, '', True)
 
 
-class SQLite(Database):
+class SQLiteDB(Database):
     def update(self):
-        pass
+        tables = self.conn.query('SELECT * FROM sqlite_master where type=\'table\';')
+        while tables.row(True):
+            t = tables.rows()[-1]
+            self.__dict__[t[1]] = Table(self.conn, t[1], True)
 
 
-class SQLAlchemy(Database):
+class SQLAlchemyDB(Database):
     def update(self):
         pass

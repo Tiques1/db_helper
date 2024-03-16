@@ -1,19 +1,17 @@
-HANDLER = {'C': lambda cmd: command_complete(cmd),
-           'G': lambda cmd: copy_in_response(cmd),
-           'H': lambda cmd: copy_out_response(cmd),
-           'T': lambda cmd: row_description(cmd),
-           'D': lambda cmd: data_row(cmd),
-           'I': lambda cmd: empty_query_response(cmd),
-           'E': lambda cmd: error_response(cmd),
-           'Z': lambda cmd: ready_for_query(cmd),
-           'N': lambda cmd: notice_response(cmd)
-           }
+from table import Table
+
+table_recieved = False
 
 
-def handler(rcv: [bytes]):
+def handler(conn, rcv: [bytes]):
+    table = Table(conn, 'query response')
     for i in rcv:
         func = HANDLER.get(i.decode('utf-8', errors='ignore')[0])
-        func(i)
+        if func is data_row or func is row_description:
+            func(i, table)
+    if tablse_recieved:
+        return table
+    return False
 
 
 def command_complete(cmd):
@@ -29,12 +27,13 @@ def copy_out_response(cmd):
     pass
 
 
-def row_description(cmd):
-    pass
+def row_description(cmd, table):
+
+    table_recieved = True
 
 
-def data_row(cmd):
-    pass
+def data_row(cmd, table):
+    return True
 
 
 def empty_query_response(cmd):
@@ -59,3 +58,15 @@ def ready_for_query(cmd):
 # Later add field parser
 def notice_response(cmd):
     print(cmd[5:].decode('utf-8', errors='ignore'))
+
+
+HANDLER = {'C': command_complete,
+           'G': copy_in_response,
+           'H': copy_out_response,
+           'T': row_description,
+           'D': data_row,
+           'I': empty_query_response,
+           'E': error_response,
+           'Z': ready_for_query,
+           'N': notice_response
+           }
